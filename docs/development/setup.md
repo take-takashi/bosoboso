@@ -1,39 +1,37 @@
-# Development Setup
+# 開発環境の準備
 
-このドキュメントには、ローカル開発環境の準備手順を記録する。
+## 対象環境
 
-テンプレートから新しいプロジェクトを作成するときは、実際の技術スタックに合わせてこのファイルを更新する。
+- Apple Silicon搭載Mac
+- macOS 14 Sonoma以降
+- Xcode Command Line Tools
+- mise
 
-## 前提条件
+Go、golangci-lint、Fyneのパッケージ化に必要なツールは、実装開始時に`mise.toml`へバージョンを固定する。Homebrew、Python、FFmpeg、Whisper CLIはアプリの実行時依存にしない。
 
-| ツール | バージョン | 用途 | インストール方法 |
-| --- | --- | --- | --- |
-| TBD | TBD | TBD | TBD |
+## 実装前の状態
 
-## 初回セットアップ
+現在はプロダクトドキュメントを確定した段階であり、Goモジュールとmise tasksはまだ存在しない。実装開始時に、実在するセットアップタスクとコマンドだけをこの文書へ追加する。
 
-```sh
-# TBD
-```
+## ローカル利用に必要な外部ファイル
 
-## 環境変数
+- `whisper.cpp`が扱えるGGML形式の多言語Whisperモデル
+- `~/.config/bosoboso/config.toml`
+- 設定ファイルから参照する辞書TOML
 
-必要な環境変数を記載する。秘密情報の値は記載しない。
+Whisperモデルはリポジトリとアプリへ含めない。モデル、設定、辞書のパスと形式は`docs/specs/configuration.md`を参照する。
 
-| 変数名 | 必須 | 用途 | 例 |
-| --- | --- | --- | --- |
-| TBD | TBD | TBD | TBD |
+## ローカルテストに必要な外部ファイル
 
-## ローカル起動
+Integration TestとE2Eテストでは、リポジトリ外にある次のファイルをmiseタスクの`usage`引数で指定する。
 
-```sh
-# TBD
-```
+- テスト用音声ファイル
+- Whisperモデル
 
-## トラブルシュート
+音声ファイルとモデルをリポジトリへコミットしない。
 
-よくある問題と解決方法を記載する。
+## macOS固有の確認
 
-| 症状 | 原因 | 対応 |
-| --- | --- | --- |
-| TBD | TBD | TBD |
+- 初回起動時にはマイク権限が必要になる。
+- Bundle IDは`io.github.take-takashi.bosoboso`で固定する。
+- MVPではコード署名と公証を必須にせず、ローカルビルドした`bosoboso.app`を対象にする。

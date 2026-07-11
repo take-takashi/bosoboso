@@ -13,3 +13,8 @@
 - `docs/specs/account.md`
 - `docs/specs/billing.md`
 - `docs/specs/order.md`
+
+## bosobosoの仕様
+
+- `transcription.md`: 継続文字起こし、小窓、状態遷移、コピー、エラー処理を記載する。
+- `configuration.md`: 設定ファイル、辞書、パス解決、検証規則を記載する。
