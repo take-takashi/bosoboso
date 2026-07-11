@@ -1,0 +1,2 @@
+# AGENTS.mdがない場合はCLAUDE.mdを参照する
+project_doc_fallback_filenames = ["CLAUDE.md"]
