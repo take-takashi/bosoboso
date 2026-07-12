@@ -12,7 +12,7 @@
 
 | 目的 | 入口 | モデル | CI |
 | --- | --- | --- | --- |
-| ツールのインストール | `mise run setup` | 不要 | mise actionが実行 |
+| ツールとGit hooksのセットアップ | `mise run setup` | 不要 | mise actionがツールを導入 |
 | フォーマット | `mise run format` | 不要 | 対象外 |
 | フォーマット確認 | `mise run format:check` | 不要 | 実行 |
 | Lint | `mise run lint` | 不要 | 実行 |

@@ -30,6 +30,10 @@ go.work.sum
 # Development tool caches
 .cache/
 
+# Linked worktrees
+.worktree/*
+!.worktree/.gitkeep
+
 # Editor/IDE
 # .idea/
 # .vscode/

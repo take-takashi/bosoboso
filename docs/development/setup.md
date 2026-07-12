@@ -21,7 +21,7 @@ mise run setup
 mise run check
 ```
 
-`mise run setup`は、`mise.toml`に固定されたGoとgolangci-lintをインストールする。シェルでmiseを有効化していない場合も、開発コマンドは`mise run <task>`で実行できる。
+`mise run setup`は、`mise.toml`に固定されたGoとgolangci-lintをインストールし、Gitがリポジトリ管理下の`.githooks/`を使用するように`core.hooksPath`を設定する。シェルでmiseを有効化していない場合も、開発コマンドは`mise run <task>`で実行できる。
 
 現在はGoモジュールとモデル不要の品質ゲートだけを用意しており、アプリケーションは未実装である。GUI、音声入力、音声認識、パッケージ化に必要な依存関係は、各機能を実装するときに追加する。
 

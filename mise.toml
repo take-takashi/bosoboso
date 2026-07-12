@@ -9,8 +9,11 @@ GOCACHE = "{{config_root}}/.cache/go-build"
 GOLANGCI_LINT_CACHE = "{{config_root}}/.cache/golangci-lint"
 
 [tasks.setup]
-description = "固定した開発ツールをインストールする"
-run = "mise install"
+description = "固定した開発ツールとGit hooksをセットアップする"
+run = '''
+mise install
+git config --local core.hooksPath .githooks
+'''
 
 [tasks.format]
 description = "Goソースコードを整形する"
