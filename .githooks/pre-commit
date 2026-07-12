@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -eu
+
+common_dir="$(git rev-parse --path-format=absolute --git-common-dir)"
+git_dir="$(git rev-parse --path-format=absolute --git-dir)"
+branch="$(git symbolic-ref --quiet --short HEAD || true)"
+
+if [ "$git_dir" = "$common_dir" ]; then
+	echo "エラー: メイン作業ツリーではコミットできません。" >&2
+	echo "git worktreeで作成した作業ツリーを使用してください。" >&2
+	exit 1
+fi
+
+if [ "$branch" = "main" ]; then
+	echo "エラー: mainブランチへ直接コミットできません。" >&2
+	exit 1
+fi

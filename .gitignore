@@ -27,6 +27,13 @@ go.work.sum
 # env file
 .env
 
+# Development tool caches
+.cache/
+
+# Linked worktrees
+.worktree/*
+!.worktree/.gitkeep
+
 # Editor/IDE
 # .idea/
 # .vscode/
