@@ -20,6 +20,9 @@
 | モデル不要ビルド | `mise run build` | 不要 | 実行 |
 | Go依存関係の整理 | `mise run tidy` | 不要 | 対象外 |
 | 全軽量検証 | `mise run check` | 不要 | 実行 |
+| TAKTでタスクを整理してキューへ登録 | `mise run takt` | 不要 | 対象外 |
+| TAKTのキューを隔離worktreeで実行 | `mise run takt:run` | 不要 | 対象外 |
+| TAKTのタスクブランチと結果を管理 | `mise run takt:list` | 不要 | 対象外 |
 
 開発起動、Integration Test、E2Eテスト、macOSアプリ作成のタスクは、対応する実装がまだ存在しないため定義していない。Integration TestとE2Eテストを追加するときは、少なくとも音声ファイルとWhisperモデルのパスを`usage`の必須引数として定義する。
 

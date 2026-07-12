@@ -7,7 +7,7 @@
 - Xcode Command Line Tools
 - mise
 
-Goとgolangci-lintは`mise.toml`へバージョンを固定する。Fyneのパッケージ化に必要なツールは、パッケージ化の実装時に追加して固定する。Homebrew、Python、FFmpeg、Whisper CLIはアプリの実行時依存にしない。
+Go、golangci-lint、Node.js、Codex CLI、TAKTは`mise.toml`へバージョンを固定する。Fyneのパッケージ化に必要なツールは、パッケージ化の実装時に追加して固定する。Homebrew、Python、FFmpeg、Whisper CLIはアプリの実行時依存にしない。
 
 ## セットアップ
 
@@ -21,7 +21,16 @@ mise run setup
 mise run check
 ```
 
-`mise run setup`は、`mise.toml`に固定されたGoとgolangci-lintをインストールし、Gitがリポジトリ管理下の`.githooks/`を使用するように`core.hooksPath`を設定する。シェルでmiseを有効化していない場合も、開発コマンドは`mise run <task>`で実行できる。
+`mise run setup`は、`mise.toml`に固定された開発ツールをインストールし、Gitがリポジトリ管理下の`.githooks/`を使用するように`core.hooksPath`を設定する。シェルでmiseを有効化していない場合も、開発コマンドは`mise run <task>`で実行できる。
+
+TAKTは、Codex SDKが起動するローカルのCodex CLIを利用する。OpenAI APIキーは使用せず、ChatGPTプランで認証したCodex CLIのログイン情報を利用する。初回だけ次を実行し、ブラウザーでChatGPTへログインする。
+
+```shell
+mise exec -- codex login
+mise exec -- codex login status
+```
+
+`OPENAI_API_KEY`と`TAKT_OPENAI_API_KEY`は設定しない。すでにシェルへ設定している場合は、TAKTを実行する前に削除する。
 
 現在はGoモジュールとモデル不要の品質ゲートだけを用意しており、アプリケーションは未実装である。GUI、音声入力、音声認識、パッケージ化に必要な依存関係は、各機能を実装するときに追加する。
 
