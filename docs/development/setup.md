@@ -7,11 +7,23 @@
 - Xcode Command Line Tools
 - mise
 
-Go、golangci-lint、Fyneのパッケージ化に必要なツールは、実装開始時に`mise.toml`へバージョンを固定する。Homebrew、Python、FFmpeg、Whisper CLIはアプリの実行時依存にしない。
+Goとgolangci-lintは`mise.toml`へバージョンを固定する。Fyneのパッケージ化に必要なツールは、パッケージ化の実装時に追加して固定する。Homebrew、Python、FFmpeg、Whisper CLIはアプリの実行時依存にしない。
 
-## 実装前の状態
+## セットアップ
 
-現在はプロダクトドキュメントを確定した段階であり、Goモジュールとmise tasksはまだ存在しない。実装開始時に、実在するセットアップタスクとコマンドだけをこの文書へ追加する。
+1. Xcode Command Line Toolsをインストールする。
+2. miseをインストールする。
+3. リポジトリのルートで次を実行する。
+
+```shell
+mise trust
+mise run setup
+mise run check
+```
+
+`mise run setup`は、`mise.toml`に固定されたGoとgolangci-lintをインストールする。シェルでmiseを有効化していない場合も、開発コマンドは`mise run <task>`で実行できる。
+
+現在はGoモジュールとモデル不要の品質ゲートだけを用意しており、アプリケーションは未実装である。GUI、音声入力、音声認識、パッケージ化に必要な依存関係は、各機能を実装するときに追加する。
 
 ## ローカル利用に必要な外部ファイル
 

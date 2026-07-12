@@ -6,6 +6,17 @@
 
 現在は仕様策定段階であり、アプリケーションは未実装である。
 
+## 開発環境
+
+Apple Silicon搭載MacへXcode Command Line Toolsとmiseを用意した後、次のコマンドで固定済みの開発ツールをインストールして検証できる。
+
+```shell
+mise run setup
+mise run check
+```
+
+詳細は[開発環境の準備](docs/development/setup.md)と[開発コマンド](docs/development/commands.md)を参照する。
+
 ## ドキュメント
 
 - [PRD](docs/product/prd.md)

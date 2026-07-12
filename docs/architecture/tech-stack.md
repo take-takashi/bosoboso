@@ -4,14 +4,14 @@
 
 | 領域 | 採用技術 | バージョン方針 | 用途 | 備考 |
 | --- | --- | --- | --- | --- |
-| 言語 | Go | 実装開始時の最新安定版を固定 | アプリケーション全体 | `go.mod`と`mise.toml`で固定する |
+| 言語 | Go | 1.26.5 | アプリケーション全体 | `go.mod`と`mise.toml`で固定する |
 | GUI | Fyne | 実装開始時に固定 | クロスプラットフォームGUI | ヘッドレスなGUIテストに対応する |
 | 音声入力 | `malgo` / miniaudio | 実装開始時に固定 | デバイス列挙とPCM取得 | cgoを使用し、macOSではCore Audioへ接続する |
 | 音声認識 | `whisper.cpp`公式Goバインディング | 実装開始時に固定 | ローカルWhisper推論 | cgoとMetalを使用する |
 | VAD | Silero VAD | 対応モデルを固定 | 発話区間の検出 | 約1 MiB未満のモデルをアプリへ同梱する |
 | 設定 | TOML | スキーマ`version = 1` | 設定と辞書 | ライブラリは実装時に選定する |
 | タスクランナー | mise tasks | `mise.toml`で固定 | 開発コマンドの統一 | 引数は`usage`で宣言する |
-| Lint | golangci-lint | miseで固定 | Goの静的解析 | 有効なルールを明示する |
+| Lint | golangci-lint | 2.12.2 | Goの静的解析 | `standard` lintersを使用する |
 | テスト | Go標準テスト、Fyne test | Go依存として固定 | ユニット、GUIコンポーネント、結合テスト | モデル必須テストはローカルで実行する |
 | CI | GitHub Actions | ワークフローで固定 | モデル不要の品質ゲート | Integration TestとE2Eは含めない |
 
