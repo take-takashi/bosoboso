@@ -1,0 +1,458 @@
+name: bosoboso-tdd
+description: bosoboso向けの仕様策定、人間承認、TDD実装、独立レビュー、受け入れワークフロー
+max_steps: 40
+initial_step: specification
+workflow_config:
+  provider_options:
+    codex:
+      network_access: false
+
+loop_monitors:
+  - cycle:
+      - reviewers
+      - fix
+    threshold: 3
+    judge:
+      persona: supervisor
+      instruction: |
+        レビューと修正が{cycle_count}回繰り返されています。
+        指摘が減っており、仕様適合へ進んでいるかを判断してください。
+      rules:
+        - condition: 改善している
+          next: reviewers
+        - condition: 同じ指摘が繰り返されている、または仕様判断が必要
+          next: final_approval
+
+steps:
+  - name: specification
+    tags:
+      - plan
+      - specification
+    edit: false
+    persona: planner
+    knowledge:
+      - existing-system
+      - architecture
+    provider_options:
+      extends: review-readonly
+    instruction: |
+      {task}
+
+      AGENTS.mdとdocs/lessons.mdを最初に読み、関連するdocs/product、docs/specs、
+      docs/architecture、docs/decisionsを確認してください。
+      実装へ進まず、要求、制約、対象外、期待挙動、状態遷移、異常系、境界値、
+      非機能要件、Given/When/Then形式の受け入れ条件を整理してください。
+      仕様、ドキュメント、実装に矛盾がある場合は、勝手に解消せず明示してください。
+    output_contracts:
+      report:
+        - name: specification.md
+          format: |
+            # 仕様案
+            ## 目的とユーザー価値
+            ## 対象範囲
+            ## 対象外
+            ## 期待挙動
+            ## 異常系と境界値
+            ## 非機能要件
+            ## 受け入れ条件
+            ## 既存文書・実装との矛盾
+            ## 人間の判断が必要な事項
+    rules:
+      - condition: 仕様案を作成でき、テスト観点を設計できる
+        next: test_design
+      - condition: 要求が不足しており仕様案を作成できない
+        next: specification
+        requires_user_input: true
+        interactive_only: true
+
+  - name: test_design
+    tags:
+      - plan
+      - test-planning
+    edit: false
+    persona: test-planner
+    policy: testing
+    knowledge:
+      - unit-testing
+      - e2e-testing
+    provider_options:
+      extends: review-readonly
+    instruction: |
+      {report:specification.md}
+
+      仕様案からテスト観点を独立して設計してください。
+      各受け入れ条件について、ユニット、Integration、E2E、手動確認のどの層で
+      検証するかを決めてください。正常系だけでなく、異常系、境界値、回帰、
+      macOS固有事項、秘密情報と音声・文字起こし内容の漏えい防止を検討してください。
+      実装の内部構造へ過度に依存するテストは避けてください。
+    output_contracts:
+      report:
+        - name: test-design.md
+          format: |
+            # テスト観点
+            ## 受け入れ条件との対応表
+            ## ユニットテスト
+            ## Integration Test
+            ## E2Eテスト
+            ## 手動確認
+            ## 異常系と境界値
+            ## セキュリティとプライバシー
+            ## 自動化しない項目と理由
+    rules:
+      - condition: 受け入れ条件を判定できるテスト観点が揃った
+        next: implementation_plan
+      - condition: 仕様の不足または矛盾が見つかった
+        next: specification
+
+  - name: implementation_plan
+    tags:
+      - plan
+    edit: false
+    persona: architect-planner
+    knowledge:
+      - existing-system
+      - architecture
+    provider_options:
+      extends: review-readonly
+    instruction: |
+      {report:specification.md}
+
+      {report:test-design.md}
+
+      仕様とテスト観点を満たす、最小限で段階的な実装計画を作成してください。
+      変更対象、責務の境界、依存方向、エラー設計、TDDのテストリスト、
+      RED・GREEN・REFACTORの実施順、必要なドキュメント更新を明示してください。
+      将来要件を先取りした抽象化やフォールバックは計画へ含めないでください。
+    output_contracts:
+      report:
+        - name: implementation-plan.md
+          format: |
+            # 実装計画
+            ## 変更対象
+            ## 設計と責務
+            ## エラー設計
+            ## TDDテストリスト
+            ## RED・GREEN・REFACTORの順序
+            ## ドキュメント更新
+            ## リスクと未決事項
+    rules:
+      - condition: 実装可能な計画が完成した
+        next: spec_approval
+      - condition: 仕様またはテスト観点の見直しが必要
+        next: specification
+
+  - name: spec_approval
+    tags:
+      - approval
+    edit: false
+    persona: supervisor
+    provider_options:
+      extends: review-readonly
+    instruction: |
+      {report:specification.md}
+
+      {report:test-design.md}
+
+      {report:implementation-plan.md}
+
+      仕様案、テスト観点、実装計画を要約し、人間へ承認を求めてください。
+      承認前にはファイルを変更せず、実装へ進まないでください。
+      修正指示を受けた場合は、変更すべき内容を明確にしてください。
+      これまでのユーザー入力:
+      {user_inputs}
+    output_contracts:
+      report:
+        - name: specification-approval.md
+          format: |
+            # 仕様承認
+            ## 承認対象
+            ## 重要な判断
+            ## 未解決事項
+            ## 判定
+    rules:
+      - condition: 人間が仕様、テスト観点、実装計画を承認した
+        next: document_spec
+      - condition: 人間が修正を指示した
+        next: specification
+      - condition: 人間の承認をまだ得ていない
+        next: spec_approval
+        requires_user_input: true
+        interactive_only: true
+
+  - name: document_spec
+    tags:
+      - documentation
+    edit: true
+    persona: coder
+    policy: coding
+    knowledge: existing-system
+    provider_options:
+      extends: edit
+    required_permission_mode: edit
+    instruction: |
+      {report:specification.md}
+
+      承認済みの仕様を、AGENTS.mdのドキュメント参照方針に従って適切なdocs/へ反映してください。
+      今回限りの判断をdocs/lessons.mdへ記録しないでください。
+      このステップではプロダクションコードとテストコードを変更しないでください。
+    rules:
+      - condition: 承認済み仕様を文書へ反映した
+        next: tdd_implementation
+      - condition: 反映先を判断できない、または既存文書と矛盾する
+        next: spec_approval
+        requires_user_input: true
+        interactive_only: true
+
+  - name: tdd_implementation
+    tags:
+      - coding
+      - tdd
+    edit: true
+    persona: coder
+    policy:
+      - coding
+      - testing
+    knowledge:
+      - existing-system
+      - architecture
+      - unit-testing
+    provider_options:
+      extends: edit
+    required_permission_mode: edit
+    session: refresh
+    instruction: |
+      {report:specification.md}
+
+      {report:test-design.md}
+
+      {report:implementation-plan.md}
+
+      承認済みの仕様と計画に従い、t-wada式TDDで実装してください。
+      実装前にテストリストを確認し、Goコードを書く前に日本語の自然言語コメントで
+      Python-likeな擬似コードを書いてください。テストを一つ追加し、意図した理由で
+      失敗するREDを確認し、最小限の実装でGREENにし、その後にREFACTORしてください。
+      このサイクルをテストリストごとに繰り返してください。
+      フォールバックや、エラーを隠す代替経路は追加しないでください。
+      開発コマンドはmiseタスクを入口にし、最後にmise run checkを実行してください。
+    quality_gates:
+      - 承認済みの受け入れ条件を満たすこと
+      - REDを確認せずにプロダクションコードを先行実装していないこと
+      - mise run checkが成功すること
+      - 仕様変更と実装変更に必要なドキュメントが更新されていること
+    output_contracts:
+      report:
+        - name: tdd-report.md
+          format: |
+            # TDD実装レポート
+            ## テストリスト
+            ## REDの確認
+            ## GREENの実装
+            ## REFACTOR
+            ## 変更ファイル
+            ## 実行した検証と結果
+            ## 残課題
+    rules:
+      - condition: TDD実装と全検証が完了した
+        next: reviewers
+      - condition: 仕様判断またはユーザー入力が必要
+        next: spec_approval
+        requires_user_input: true
+        interactive_only: true
+      - condition: 実装を継続できない
+        next: ABORT
+
+  - name: reviewers
+    tags:
+      - review
+    parallel:
+      - name: architecture_review
+        edit: false
+        persona: architecture-reviewer
+        policy: review
+        knowledge:
+          - existing-system
+          - architecture
+        provider_options:
+          extends: review-readonly
+        pass_previous_response: false
+        instruction: |
+          {report:specification.md}
+
+          承認済み仕様に対する設計の妥当性、責務と依存方向、エラー設計、
+          不要な抽象化、ドキュメントとの整合を独立してレビューしてください。
+        output_contracts:
+          report:
+            - name: architecture-review.md
+              format: |
+                # アーキテクチャレビュー
+                ## 判定
+                ## 指摘
+                ## 仕様との対応
+                ## 修正条件
+        rules:
+          - condition: approved
+          - condition: needs_fix
+          - condition: need_replan
+      - name: testing_review
+        edit: false
+        persona: testing-reviewer
+        policy:
+          - review
+          - testing
+        knowledge:
+          - unit-testing
+          - e2e-testing
+        provider_options:
+          extends: review-readonly
+        pass_previous_response: false
+        instruction: |
+          {report:specification.md}
+
+          {report:test-design.md}
+
+          受け入れ条件とテストの対応、正常系、異常系、境界値、回帰防止、
+          テストの独立性、実装詳細への過剰依存を独立してレビューしてください。
+          TDDレポートと実際のコミット差分が矛盾していないかも確認してください。
+        output_contracts:
+          report:
+            - name: testing-review.md
+              format: |
+                # テストレビュー
+                ## 判定
+                ## 受け入れ条件との対応
+                ## 不足しているテスト
+                ## 修正条件
+        rules:
+          - condition: approved
+          - condition: needs_fix
+          - condition: need_replan
+    rules:
+      - condition: all("approved")
+        next: acceptance
+      - condition: any("need_replan")
+        next: spec_approval
+      - condition: any("needs_fix")
+        next: fix
+
+  - name: fix
+    tags:
+      - coding
+      - tdd
+    edit: true
+    persona: coder
+    policy:
+      - coding
+      - testing
+    knowledge:
+      - architecture
+      - unit-testing
+    provider_options:
+      extends: edit
+    required_permission_mode: edit
+    session: refresh
+    pass_previous_response: false
+    instruction: |
+      {report:architecture-review.md}
+
+      {report:testing-review.md}
+
+      レビュー指摘を再現する失敗テストを先に追加し、RED、GREEN、REFACTORの順で
+      必要最小限の修正を行ってください。指摘範囲を超える変更は行わず、
+      最後にmise run checkを実行してください。
+    rules:
+      - condition: 指摘をTDDで修正し、検証が成功した
+        next: reviewers
+      - condition: 仕様変更または人間の判断が必要
+        next: spec_approval
+        requires_user_input: true
+        interactive_only: true
+
+  - name: acceptance
+    tags:
+      - review
+      - acceptance
+    edit: false
+    persona: qa-reviewer
+    policy:
+      - review
+      - testing
+    knowledge:
+      - unit-testing
+      - e2e-testing
+    provider_options:
+      extends: review-readonly
+    pass_previous_response: false
+    instruction: |
+      {report:specification.md}
+
+      {report:test-design.md}
+
+      実装者の説明ではなく、承認済みの受け入れ条件とテスト観点を基準に検証してください。
+      mise run checkを実行し、受け入れ条件ごとに合否と証拠を示してください。
+      自動化できない項目、未実施の手動確認、仕様外の変更、残存リスクを明示してください。
+    quality_gates:
+      - mise run checkが成功すること
+      - すべての受け入れ条件に合否と証拠があること
+      - 未実施の手動確認と残存リスクが明示されていること
+    output_contracts:
+      report:
+        - name: acceptance-report.md
+          format: |
+            # 受け入れレポート
+            ## 総合判定
+            ## 受け入れ条件別の合否と証拠
+            ## 実行した検証
+            ## 未実施の手動確認
+            ## 仕様外の変更
+            ## 残存リスク
+    rules:
+      - condition: すべての自動受け入れ条件を満たした
+        next: final_approval
+      - condition: 実装修正が必要
+        next: fix
+      - condition: 仕様の見直しが必要
+        next: spec_approval
+
+  - name: final_approval
+    tags:
+      - approval
+      - final-gate
+    edit: false
+    persona: supervisor
+    provider_options:
+      extends: review-readonly
+    pass_previous_response: false
+    instruction: |
+      {report:specification.md}
+
+      {report:architecture-review.md}
+
+      {report:testing-review.md}
+
+      {report:acceptance-report.md}
+
+      仕様、レビュー、受け入れ結果を要約し、人間へ最終承認を求めてください。
+      APIキー、秘密情報、外部有料サービスが追加されていないことも確認してください。
+      これまでのユーザー入力:
+      {user_inputs}
+    output_contracts:
+      report:
+        - name: final-approval.md
+          format: |
+            # 最終承認
+            ## 変更概要
+            ## 受け入れ結果
+            ## 未実施事項とリスク
+            ## APIキー・秘密情報・外部課金の確認
+            ## 人間の判定
+    rules:
+      - condition: 人間が受け入れを承認した
+        next: COMPLETE
+      - condition: 人間が実装修正を指示した
+        next: fix
+      - condition: 人間が仕様変更を指示した
+        next: specification
+      - condition: 人間の最終承認をまだ得ていない
+        next: final_approval
+        requires_user_input: true
+        interactive_only: true
