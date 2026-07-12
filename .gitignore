@@ -34,6 +34,12 @@ go.work.sum
 .worktree/*
 !.worktree/.gitkeep
 
+# TAKT local tasks and execution records
+.takt/events/
+.takt/runs/
+.takt/tasks.yaml
+.takt/tasks/
+
 # Editor/IDE
 # .idea/
 # .vscode/

@@ -3,6 +3,9 @@ min_version = "2026.7.5"
 [tools]
 go = "1.26.5"
 golangci-lint = "2.12.2"
+node = "22.22.0"
+"npm:@openai/codex" = "0.144.1"
+"npm:takt" = "0.51.0"
 
 [env]
 GOCACHE = "{{config_root}}/.cache/go-build"
@@ -42,6 +45,21 @@ run = "go build ./..."
 [tasks.tidy]
 description = "Goモジュールの依存関係を整理する"
 run = "go mod tidy"
+
+[tasks.takt]
+description = "TAKTで開発タスクを整理してキューへ登録する"
+run = "takt"
+raw = true
+
+[tasks."takt:run"]
+description = "キューにあるTAKTタスクを隔離worktreeで実行する"
+run = "takt run"
+raw = true
+
+[tasks."takt:list"]
+description = "TAKTのタスクブランチと実行結果を管理する"
+run = "takt list"
+raw = true
 
 [tasks.check]
 description = "CIと同じモデル不要の検証をすべて実行する"
